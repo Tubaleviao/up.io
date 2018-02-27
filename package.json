@@ -1,0 +1,29 @@
+{
+  "name": "up.io",
+  "version": "1.0.0",
+  "description": "uploads files to a node.js server using socket.io and stream",
+  "main": "server.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tubaleviao/up.io.git"
+  },
+  "keywords": [
+    "upload",
+    "uploader",
+    "socket",
+    "socket.io",
+    "stream"
+  ],
+  "author": "Tubalevião <tubaleviao@gmail.com> (http://chocotuba.work)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Tubaleviao/up.io/issues"
+  },
+  "homepage": "https://github.com/Tubaleviao/up.io#readme"
+}
