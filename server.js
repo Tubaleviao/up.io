@@ -1,46 +1,84 @@
-var //util = require("util"),
-  //EventEmitter = require("events").EventEmitter,
-  path = require("path"),
+var path = require("path"),
   fs = require("fs");
 
-var main_process = function(){
+var UpIoFileUpload = function(){
   
-  self.dir = "./"; // folder path to save files (./ as deffault)
-  self.maxFileSize = null; // max file size permitted
-  self.savingFiles = []; // array of files being uploaded
+  this.maxFileSize = null; // max file size permitted
+  var dir = ""; // folder path to save files (current folder as deffault)
+  var chunkFiles = []; // array of files being uploaded
+  var chunksLoaded = [];
   
-  function startUpload(data){
-    var fileInfo = data.file;
-    var saving = fs.createWriteStream(path.join(__dirname, self.dir, data.file.name));
-    saving.write(data.chunk);
-    if (savingFiles[data.file.id] != null) {
-      savingFiles.splice(data.file.id, 1);
+  var writeFile = function (socket, data){
+    console.log("writing file");
+    
+    var saving = fs.createWriteStream(path.join(__dirname, dir, data.file.name)); // create write stream
+    
+    var itemsProcessed = 0;
+    //chunkFiles[data.file.id].forEach(function(buff, index, array){ // select chunk by chunk
+    for(var i=1; i<=chunkFiles[data.file.id].length; i++){
+      var buff = chunkFiles[data.file.id][i];
+      console.log("id: "+data.file.id+" chunk: "+i);
+      saving.write(buff, () => { // start writing
+        itemsProcessed++;
+        console.log("index: "+i+" array.length: "+chunkFiles[data.file.id].length);
+        if(itemsProcessed === chunkFiles[data.file.id].length) { // check if it's all writen
+          console.log("writen");
+          socket.emit("completed", {file_id: data.file.id}); // emit complete event
+          saving.close();
+          chunkFiles.splice(data.file.id, 1); // delete array
+          console.log("file id deleted: "+data.file.id);
+        }
+      });
     }
-    savingFiles[data.file.id] = saving;
+    //});
   }
   
-  function chunk(socket, data){
-    savingFiles[data.file.id].write(data.chunk, function(){
-      if(savingFiles[data.file.id].bytesWritten === data.file.bytes){
-        savingFiles[data.file.id].close();
-        socket.emit("completed", {file_id: data.file.id});
-        savingFiles.splice(data.file.id, 1);
-      }
-    });
+  var chunk = function (socket, data){ // TODO: check when the chunks stop arriving
+    if(!chunkFiles[data.file.id]){
+      chunkFiles[data.file.id] = [];
+      chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
+      chunksLoaded[data.file.id] = 1;
+      console.log("1file id: "+data.file.id+" total: "+data.file.chunk_total+
+                  " chunksLoaded: "+chunksLoaded[data.file.id]+" chunk_num: "+data.file.chunk_num);
+    }else if(chunksLoaded[data.file.id] < data.file.chunk_total){
+      chunksLoaded[data.file.id]++;
+      console.log("1file id: "+data.file.id+" total: "+data.file.chunk_total+
+                  " chunksLoaded: "+chunksLoaded[data.file.id]+" chunk_num: "+data.file.chunk_num);
+      chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
+    }else{
+      chunksLoaded[data.file.id]++;
+      console.log("1file id: "+data.file.id+" total: "+data.file.chunk_total+
+                  " chunksLoaded: "+chunksLoaded[data.file.id]+" chunk_num: "+data.file.chunk_num);
+      chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
+      console.log();
+      writeFile(socket, data);
+    }
+    socket.emit("next chunk");
   }
   
-  function abort(data){
-    savingFiles[data.file.id].close();
-    fs.unlink(path.join(__dirname, self.dir, data.file.name));
-    savingFiles.splice(data.file.id, 1);
+  var abort = function(data){
+    if(data.file){
+      chunkFiles[data.file.id].close();
+      fs.unlink(path.join(__dirname, dir, data.file.name));
+      chunkFiles.splice(data.file.id, 1);
+      console.log("aborted upload");
+     }
   }
   
   this.listen = function (socket) {
-		socket.on("up_start", function(data){startUpload(data)});
     socket.on("up_chunk", function(data){chunk(socket, data)});
 		socket.on("disconnect", function(data){abort(data)});
     socket.on("abort", function(data){abort(data)});
 	};
 }
 
-module.exports = main_process;
+UpIoFileUpload.router = function (req, res, next) {
+	if (req.url === "/upio/client.js") {
+    fs.createReadStream(__dirname + "/client.js", "UTF-8").pipe(res);
+	}
+	else {
+		next();
+	}
+};
+
+module.exports = UpIoFileUpload;

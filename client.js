@@ -1,40 +1,94 @@
-function UpIoFileUpload(socket){
+var UpIoFileUpload = function(socket){
+  this.socket = socket;
   this.parallelFiles = 5;
   this.resetFileInputs = true;
-	this.chunkSize = 1024 * 100; 
+	this.chunkSize = 1024 * 100;
 }
 
+UpIoFileUpload.prototype.getChunkSize = function(){
+  return this.chunkSize;
+}
+
+// TODO: UpIoFileUpload.prototype.setOptions = function(options)
+
 UpIoFileUpload.prototype.listenInput = function(inpt) {
+  if (!inpt) return;
   
-  if (!inpt.files) return;
+  var chunkSize = this.getChunkSize();
+  var socket = this.socket;
+  var readers = [], files = [], file_info = [];
+  var chunksQueue = [];
   
-  var _listenTo = function (object, eventName, callback) {
-		object.addEventListener(eventName, callback, false);
-	};
+  var emitChunk = function(){
+    var indexx = Math.floor(Math.random() * chunksQueue.length);
+    var chunk = chunksQueue[indexx];
+    console.log(JSON.stringify(chunksQueue));
+    chunksQueue.splice(Math.floor(Math.random() * chunksQueue.length), 1);
+    console.log("chunk_num: "+chunk.num+" index: "+indexx+" length: "+chunksQueue.length  );
+    socket.emit("up_chunk", {file: file_info[chunk.file_id][chunk.num], chunk: chunk.chunk});
+  }
   
-  var _fileSelectCallback = function (event) {
-    var files = event.target.files || event.dataTransfer.files;
-    event.preventDefault();
-    for(var i=0; i < this.parallelFiles; i++){
-      process.stdout.write(`this is the file obj: ${files.pop()}\n`);
-      // should emit first chunk to server and start upload "up_start"
+  var startSendingFile = function (file, id){
+    var iter = Math.ceil(file.size / chunkSize);
+    for(var i=0; i < iter; i++){
+      var end = (i+1)*chunkSize;
+      var blob = file.slice(i*chunkSize, end);
+      if(!file_info[id]){file_info[id] = []}
+      file_info[id][i] = {name: file.name, id: id, size: file.size, chunk_total: iter-1, chunk_num: i};
+      var reader = new FileReader();
+      reader.readAsArrayBuffer(blob);
+      reader.onload = (function(p) {
+          return function(e) {
+            chunksQueue.push({file_id: p.id.valueOf(), num: p.i.valueOf(), chunk: this.result});
+            console.log({id: p.id, i: p.i})
+            if(p.i === 0){emitChunk();}
+          };
+      })({id: id, i: i});
+      /*var file_json = {name: file.name, id: id, size: file.size, chunk_total: iter-1};
+      file_json.chunk_num = i;
+      var end = (i+1)*chunkSize;
+      if(!readers[id]){readers[id] = []}
+      readers[id][i] = new FileReader();
+      if(i==iter-1){end = file.size;}
+      if(!chunks[id]){chunks[id] = []}
+      chunks[id][i] = file_json;
+      var blob = file.slice(i*chunkSize, end);
+      readers[id][i].readAsArrayBuffer(blob);
+      readers[id][i].onload = function(event){
+        emitChunk(this);
+      }*/
     }
-
+  }
+  
+  var treatFiles = function (event) {
+    var fileList = event.target.files || event.dataTransfer.files;
+    var iter = this.parallelFiles;
+    event.preventDefault();
+    for(var i=0; i<fileList.length; i++){
+      files.push(fileList[i]);
+    }
+    if(fileList.length < iter){
+      iter = fileList.length;
+    }
+    for(var j=0; j<iter; j++){
+      startSendingFile(files.pop(), j);
+    }
     // TODO: reset html input
-	};
+	}.bind(this);
   
-  _listenTo(inpt, "change", _fileSelectCallback);
-  // TODO
-  // take files path and start sending chuncks to server
+  this.socket.on("completed", function(data){
+    console.log("completed");
+    if(files.length > 0){
+      startSendingFile(files.pop(), data.file_id);// start next file
+    }
+  });
   
-  // send data object as {file: {id: 1, name: test.mp3, ...}, chunk: ??? }
+  this.socket.on("next chunk", function(){
+    if(chunksQueue.length > 0){
+      emitChunk();
+    }
+  });
+  
+  inpt.addEventListener("change", treatFiles.bind(this), false);
 };
 
-UpIoFileUpload.prototype.sendFiles = function(files) { // may not be used
-  // TODO
-  // start sending files from an given array of files
-  process.stdout.write(`files: ${files} \n`);
-  
-};
-
-module.exports = UpIoFileUpload;
