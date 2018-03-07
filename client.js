@@ -23,7 +23,7 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
     var indexx = Math.floor(Math.random() * chunksQueue.length);
     var chunk = chunksQueue[indexx];
     chunksQueue.splice(indexx, 1);
-    console.log("file_id: "+chunk.file_id+" chunk_num: "+chunk.num+" index: "+indexx+" length: "+chunksQueue.length  );
+    //console.log("file_id: "+chunk.file_id+" chunk_num: "+chunk.num+" index: "+indexx+" length: "+chunksQueue.length  );
     socket.emit("up_chunk", {file: file_info[chunk.file_id][chunk.num], chunk: chunk.chunk});
   }
   
@@ -67,7 +67,7 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
 	}.bind(this);
   
   this.socket.on("completed", function(data){
-    console.log("completed");
+    //console.log("completed");
     if(files.length > 0){
       startSendingFile(files.pop(), data.file_id);// start next file
     }

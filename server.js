@@ -8,7 +8,7 @@ var UpIoFileUpload = function(){
   var chunksLoaded = [];
   
   var writeFile = function (socket, data){
-    console.log("writing file");
+    //console.log("writing file"); // DEBUG
     var saving = fs.createWriteStream(path.join(__dirname, this.dir, data.file.name)); // create write stream
     var itemsProcessed = 0;
     for(var i=0; i<chunkFiles[data.file.id].length; i++){ // select chunk by chunk of the file
@@ -18,10 +18,10 @@ var UpIoFileUpload = function(){
       saving.write(buff, () => { // start writing
         itemsProcessed++;
         if(itemsProcessed === chunkFiles[data.file.id].length) { // check if it's all writen
-          console.log("writen");
+          //console.log("writen"); // DEBUG
           saving.close();
           chunkFiles[data.file.id] = undefined; // reset the file_id array
-          console.log("file id deleted: "+data.file.id);
+          //console.log("file id deleted: "+data.file.id); // DEBUG
           socket.emit("completed", {file_id: data.file.id}); // emit complete event
         }
       });
