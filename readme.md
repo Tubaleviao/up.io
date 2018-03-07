@@ -67,6 +67,8 @@ When a chunk of a file is sent to the server, it can be viewed by the folowing c
 });
 ```
 
+## that's all
+
 Basically that's all. Further implementations are comming as they're needed.
 
 Pull requests are welcome.
