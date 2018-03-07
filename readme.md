@@ -8,7 +8,8 @@ Inside your server app, add the following code:
 
 ```var upio = require('up.io');
 var app = express();
-app.use(upio.router);```
+app.use(upio.router);
+```
 
 Inside your Socket connection, add the lines:
 
@@ -16,7 +17,8 @@ Inside your Socket connection, add the lines:
     var uploader = new upio();
     //uploader.dir = "path/to/save/uploads"; // (default: current directory)
     uploader.listen(socket);
-});```
+});
+```
 
 Add to your client-side web-page header this script (try to call up.io before socket.io):
 
@@ -33,7 +35,8 @@ var uploader = new UpIoFileUpload(socket);
 //uploader.parallelFiles = 5;
 //uploader.chunkSize = 1024 * 100;
 //uploader.resetFileInputs = true;
-uploader.listenInput(document.getElementById("upio_input")); // pass html element only after the page are complete loaded```
+uploader.listenInput(document.getElementById("upio_input")); // pass html element only after the page are complete loaded
+```
 
 The commented line code are optional parameters. After these steps, the uploader should work.
 
@@ -47,7 +50,8 @@ When a file is completed sent to the server, up.io emits the "completed" socket 
 
 ```socket.on("completed", function(data){
     console.log("Completed!");
-});```
+});
+```
 
 ## server-side socket events
 
@@ -60,7 +64,8 @@ When a chunk of a file is sent to the server, it can be viewed by the folowing c
 ```socket.on("up_chunk", function(data){
 	console.log(JSON.stringfy(data.file)); 
 	// structure: {name: "teste.mp3", id: 0, size: 1902834, chunk_total: 35, chunk_num: 10};
-});```
+});
+```
 
 Basically that's all. Further implementations are comming as they're needed.
 
