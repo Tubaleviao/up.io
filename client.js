@@ -5,8 +5,6 @@ var UpIoFileUpload = function(socket){
 	this.chunkSize = 1024 * 100;
 }
 
-this.socket.emit("up_abort");
-
 UpIoFileUpload.prototype.listenInput = function(inpt) {
   if (!inpt) return;
   
@@ -14,7 +12,7 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
   var socket = this.socket;
   var readers = [], files = [], file_info = [];
   var chunksQueue = [], first = true;
-  
+	
   var emitChunk = function(){
     var indexx = Math.floor(Math.random() * chunksQueue.length);
     var chunk = chunksQueue[indexx];
@@ -35,6 +33,7 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
       reader.onload = (function(p) {
           return function(e) {
             chunksQueue.push({file_id: p.id.valueOf(), num: p.i.valueOf(), chunk: this.result});
+						//console.log(p.i+" "+first);
             if(p.i === 0 && first){emitChunk(); first=false;}
           };
       })({id: id, i: i});
@@ -68,15 +67,23 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
     }
   });
 	
-	this.socket.on("up_aborted", function(data){
+	this.socket.on("up_aborted", function(){
     //console.log("aborted");
+		chunksQueue = [];
+		first = true;
+		readers = [];
+		files = [];
+		file_info = [];
   });
   
   this.socket.on("next chunk", function(){
     if(chunksQueue.length > 0){
       emitChunk();
     }
+		//console.log("next chunk");
   });
+	
+	this.socket.emit("up_init");
   
   inpt.addEventListener("change", treatFiles.bind(this), false);
 };

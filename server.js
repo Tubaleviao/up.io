@@ -6,6 +6,12 @@ var UpIoFileUpload = function(){
 	this.dir = ""; // folder path to save files (current folder as deffault)
   var chunkFiles = []; // array of files being uploaded
   var chunksLoaded = [];
+	var aborted = false;
+	
+	var init = function(){
+		chunkFiles = [];
+		chunksLoaded = [];
+	}
   
   var writeFile = function (socket, data){
     //console.log("writing file"); // DEBUG
@@ -28,7 +34,7 @@ var UpIoFileUpload = function(){
     }
   }.bind(this)
   
-  var chunk = function (socket, data){ 
+  var chunk = function (socket, data){
     if(!chunkFiles[data.file.id]){ // if it's the first chunk, initialize the array
       chunkFiles[data.file.id] = [];
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
@@ -36,6 +42,7 @@ var UpIoFileUpload = function(){
     }else if(chunksLoaded[data.file.id] < data.file.chunk_total-1){
       chunksLoaded[data.file.id]++;
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
+			socket.emit("up_progress", {file_name: data.file.name, percent: (chunksLoaded[data.file.id]/data.file.chunk_total).toFixed(2)});
     }else{ // if it's the last chunk, write file
       chunksLoaded[data.file.id]++;
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
@@ -43,17 +50,24 @@ var UpIoFileUpload = function(){
       //console.log("3file id: "+data.file.id+" total: "+data.file.chunk_total+" chunksLoaded: "+ // DEBUG
                   //chunksLoaded[data.file.id]+" chunk_num: "+data.file.chunk_num);
     }
-    socket.emit("next chunk");
+    if(!aborted){
+			socket.emit("next chunk");
+		}else{
+			aborted = false;
+			init();
+		}
   }
   
   var abort = function(socket){
-		chunkFiles = [];
-		socket.emit("up_aborted")
-  }.bind(this)
+		aborted = true;
+		socket.emit("up_aborted");
+		init();
+  }
   
   this.listen = function (socket) {
+		socket.on("up_init", function(data){init()});
     socket.on("up_chunk", function(data){chunk(socket, data)});
-		socket.on("disconnect", function(data){abort(data)});
+		socket.on("disconnect", function(data){init()});
     socket.on("up_abort", function(){abort(socket)});
     socket.on("error", function(){console.log("socket error");});
 	};

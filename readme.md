@@ -47,6 +47,16 @@ The commented line code are optional parameters. After these steps, the uploader
 
 Events that can be handled by the client-side javascript.
 
+### progress
+
+While the file is being uploaded, the progress can be viewed like this:
+
+```
+socket.on('up_progress', function(data){
+        console.log(data.file_name+": "+data.percent+"%");
+      });
+```
+
 ### complete
 
 When a file is completed sent to the server, up.io emits the "completed" socket event. It can be handle like this: 
