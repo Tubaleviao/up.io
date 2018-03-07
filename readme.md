@@ -96,6 +96,10 @@ socket.on("up_chunk", function(data){
 });
 ```
 
+## velocity
+
+Up.io was able to transfer a file of 5.166 KB in 11.6 seconds under a 6.82 Mbps upload connection.
+
 ## that's all
 
 Basically that's all. Further implementations are comming as they're needed.
