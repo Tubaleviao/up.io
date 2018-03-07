@@ -8,7 +8,8 @@ Inside your server app, add the following code:
 
 ```var upio = require('up.io');
 var app = express();
-app.use(upio.router);```
+app.use(upio.router);
+```
 
 Inside your Socket connection, add the lines:
 
