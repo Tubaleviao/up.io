@@ -22,7 +22,7 @@ var UpIoFileUpload = function(){
           saving.close();
           chunkFiles[data.file.id] = undefined; // reset the file_id array
           //console.log("file id deleted: "+data.file.id); // DEBUG
-          socket.emit("completed", {file_id: data.file.id}); // emit complete event
+          socket.emit("up_completed", {file_id: data.file.id, file_name: data.file.name}); // emit complete event
         }
       });
     }
@@ -46,19 +46,15 @@ var UpIoFileUpload = function(){
     socket.emit("next chunk");
   }
   
-  var abort = function(data){
-    if(data.file){
-      chunkFiles[data.file.id].close();
-      fs.unlink(path.join(__dirname, this.dir, data.file.name));
-      chunkFiles.splice(data.file.id, 1);
-      console.log("aborted upload");
-     }
+  var abort = function(socket){
+		chunkFiles = [];
+		socket.emit("up_aborted")
   }.bind(this)
   
   this.listen = function (socket) {
     socket.on("up_chunk", function(data){chunk(socket, data)});
 		socket.on("disconnect", function(data){abort(data)});
-    socket.on("abort", function(data){abort(data)});
+    socket.on("up_abort", function(){abort(socket)});
     socket.on("error", function(){console.log("socket error");});
 	};
 }

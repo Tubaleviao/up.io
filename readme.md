@@ -47,13 +47,27 @@ The commented line code are optional parameters. After these steps, the uploader
 
 Events that can be handled by the client-side javascript.
 
-### completed
+### complete
 
 When a file is completed sent to the server, up.io emits the "completed" socket event. It can be handle like this: 
 
 ```
-socket.on("completed", function(data){
-    console.log("Completed!");
+socket.on("up_completed", function(data){
+    console.log("Completed!"); // data: {file_id: 1, file_name: test.mp3}
+});
+```
+
+### abort
+
+To abort any ongoing upload, just emit "abort":
+
+```socket.emit("up_abort");```
+
+If abort succeded, up.io will return the "aborted" call:
+
+```
+socket.on("up_aborted", function(){
+    console.log("All aborted!"); // all uploads aborted
 });
 ```
 
@@ -61,14 +75,14 @@ socket.on("completed", function(data){
 
 Events that can be handled by the server socket connection.
 
-### up_chunk
+### chunk
 
 When a chunk of a file is sent to the server, it can be viewed by the folowing code:
 
 ```
 socket.on("up_chunk", function(data){
 	console.log(JSON.stringfy(data.file)); 
-	// structure: {name: "teste.mp3", id: 0, size: 1902834, chunk_total: 35, chunk_num: 10};
+	// structure: {name: "test.mp3", id: 0, size: 1902834, chunk_total: 35, chunk_num: 10};
 });
 ```
 

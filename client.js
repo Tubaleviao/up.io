@@ -5,19 +5,15 @@ var UpIoFileUpload = function(socket){
 	this.chunkSize = 1024 * 100;
 }
 
-UpIoFileUpload.prototype.getChunkSize = function(){
-  return this.chunkSize;
-}
-
-// TODO: UpIoFileUpload.prototype.setOptions = function(options)
+this.socket.emit("up_abort");
 
 UpIoFileUpload.prototype.listenInput = function(inpt) {
   if (!inpt) return;
   
-  var chunkSize = this.getChunkSize();
+  var chunkSize = this.chunkSize;
   var socket = this.socket;
   var readers = [], files = [], file_info = [];
-  var chunksQueue = [], first = false;
+  var chunksQueue = [], first = true;
   
   var emitChunk = function(){
     var indexx = Math.floor(Math.random() * chunksQueue.length);
@@ -58,7 +54,6 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
     for(var j=0; j<iter; j++){
       startSendingFile(files.pop(), j);
     }
-    first = true;
     
     if(this.resetFileInputs){
       inpt.value = ""; // reset files in the input
@@ -66,11 +61,15 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
     
 	}.bind(this);
   
-  this.socket.on("completed", function(data){
+  this.socket.on("up_completed", function(data){
     //console.log("completed");
     if(files.length > 0){
       startSendingFile(files.pop(), data.file_id);// start next file
     }
+  });
+	
+	this.socket.on("up_aborted", function(data){
+    //console.log("aborted");
   });
   
   this.socket.on("next chunk", function(){
