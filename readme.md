@@ -6,14 +6,16 @@ go to your project folder and run:
 
 Inside your server app, add the following code:
 
-```var upio = require('up.io');
+```
+var upio = require('up.io');
 var app = express();
 app.use(upio.router);
 ```
 
 Inside your Socket connection, add the lines:
 
-```io.on("connection", function(socket){
+```
+io.on("connection", function(socket){
     var uploader = new upio();
     //uploader.dir = "path/to/save/uploads"; // (default: current directory)
     uploader.listen(socket);
@@ -30,7 +32,8 @@ Insert the input tag in your HTML page:
 
 After that, your script should give up.io the element like this:
 
-```var socket = io.connect();
+```
+var socket = io.connect();
 var uploader = new UpIoFileUpload(socket);
 //uploader.parallelFiles = 5;
 //uploader.chunkSize = 1024 * 100;
@@ -48,7 +51,8 @@ Events that can be handled by the client-side javascript.
 
 When a file is completed sent to the server, up.io emits the "completed" socket event. It can be handle like this: 
 
-```socket.on("completed", function(data){
+```
+socket.on("completed", function(data){
     console.log("Completed!");
 });
 ```
@@ -61,7 +65,8 @@ Events that can be handled by the server socket connection.
 
 When a chunk of a file is sent to the server, it can be viewed by the folowing code:
 
-```socket.on("up_chunk", function(data){
+```
+socket.on("up_chunk", function(data){
 	console.log(JSON.stringfy(data.file)); 
 	// structure: {name: "teste.mp3", id: 0, size: 1902834, chunk_total: 35, chunk_num: 10};
 });
