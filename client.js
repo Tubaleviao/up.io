@@ -17,14 +17,13 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
   var chunkSize = this.getChunkSize();
   var socket = this.socket;
   var readers = [], files = [], file_info = [];
-  var chunksQueue = [];
+  var chunksQueue = [], first = false;
   
   var emitChunk = function(){
     var indexx = Math.floor(Math.random() * chunksQueue.length);
     var chunk = chunksQueue[indexx];
-    console.log(JSON.stringify(chunksQueue));
-    chunksQueue.splice(Math.floor(Math.random() * chunksQueue.length), 1);
-    console.log("chunk_num: "+chunk.num+" index: "+indexx+" length: "+chunksQueue.length  );
+    chunksQueue.splice(indexx, 1);
+    console.log("file_id: "+chunk.file_id+" chunk_num: "+chunk.num+" index: "+indexx+" length: "+chunksQueue.length  );
     socket.emit("up_chunk", {file: file_info[chunk.file_id][chunk.num], chunk: chunk.chunk});
   }
   
@@ -34,29 +33,15 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
       var end = (i+1)*chunkSize;
       var blob = file.slice(i*chunkSize, end);
       if(!file_info[id]){file_info[id] = []}
-      file_info[id][i] = {name: file.name, id: id, size: file.size, chunk_total: iter-1, chunk_num: i};
+      file_info[id][i] = {name: file.name, id: id, size: file.size, chunk_total: iter, chunk_num: i};
       var reader = new FileReader();
       reader.readAsArrayBuffer(blob);
       reader.onload = (function(p) {
           return function(e) {
             chunksQueue.push({file_id: p.id.valueOf(), num: p.i.valueOf(), chunk: this.result});
-            console.log({id: p.id, i: p.i})
-            if(p.i === 0){emitChunk();}
+            if(p.i === 0 && first){emitChunk(); first=false;}
           };
       })({id: id, i: i});
-      /*var file_json = {name: file.name, id: id, size: file.size, chunk_total: iter-1};
-      file_json.chunk_num = i;
-      var end = (i+1)*chunkSize;
-      if(!readers[id]){readers[id] = []}
-      readers[id][i] = new FileReader();
-      if(i==iter-1){end = file.size;}
-      if(!chunks[id]){chunks[id] = []}
-      chunks[id][i] = file_json;
-      var blob = file.slice(i*chunkSize, end);
-      readers[id][i].readAsArrayBuffer(blob);
-      readers[id][i].onload = function(event){
-        emitChunk(this);
-      }*/
     }
   }
   
@@ -73,7 +58,12 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
     for(var j=0; j<iter; j++){
       startSendingFile(files.pop(), j);
     }
-    // TODO: reset html input
+    first = true;
+    
+    if(this.resetFileInputs){
+      inpt.value = ""; // reset files in the input
+    }
+    
 	}.bind(this);
   
   this.socket.on("completed", function(data){

@@ -3,55 +3,45 @@ var path = require("path"),
 
 var UpIoFileUpload = function(){
   
-  this.maxFileSize = null; // max file size permitted
-  var dir = ""; // folder path to save files (current folder as deffault)
+	this.dir = ""; // folder path to save files (current folder as deffault)
   var chunkFiles = []; // array of files being uploaded
   var chunksLoaded = [];
   
   var writeFile = function (socket, data){
     console.log("writing file");
-    
-    var saving = fs.createWriteStream(path.join(__dirname, dir, data.file.name)); // create write stream
-    
+    var saving = fs.createWriteStream(path.join(__dirname, this.dir, data.file.name)); // create write stream
     var itemsProcessed = 0;
-    //chunkFiles[data.file.id].forEach(function(buff, index, array){ // select chunk by chunk
-    for(var i=1; i<=chunkFiles[data.file.id].length; i++){
+    for(var i=0; i<chunkFiles[data.file.id].length; i++){ // select chunk by chunk of the file
       var buff = chunkFiles[data.file.id][i];
-      console.log("id: "+data.file.id+" chunk: "+i);
+      //process.stdout.write(`file_id: ${data.file.id} chunk: ${i}`); // DEBUG
+      //process.stdout.write(` buff.length: ${buff.length}\n`);
       saving.write(buff, () => { // start writing
         itemsProcessed++;
-        console.log("index: "+i+" array.length: "+chunkFiles[data.file.id].length);
         if(itemsProcessed === chunkFiles[data.file.id].length) { // check if it's all writen
           console.log("writen");
-          socket.emit("completed", {file_id: data.file.id}); // emit complete event
           saving.close();
-          chunkFiles.splice(data.file.id, 1); // delete array
+          chunkFiles[data.file.id] = undefined; // reset the file_id array
           console.log("file id deleted: "+data.file.id);
+          socket.emit("completed", {file_id: data.file.id}); // emit complete event
         }
       });
     }
-    //});
-  }
+  }.bind(this)
   
-  var chunk = function (socket, data){ // TODO: check when the chunks stop arriving
-    if(!chunkFiles[data.file.id]){
+  var chunk = function (socket, data){ 
+    if(!chunkFiles[data.file.id]){ // if it's the first chunk, initialize the array
       chunkFiles[data.file.id] = [];
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
       chunksLoaded[data.file.id] = 1;
-      console.log("1file id: "+data.file.id+" total: "+data.file.chunk_total+
-                  " chunksLoaded: "+chunksLoaded[data.file.id]+" chunk_num: "+data.file.chunk_num);
-    }else if(chunksLoaded[data.file.id] < data.file.chunk_total){
+    }else if(chunksLoaded[data.file.id] < data.file.chunk_total-1){
       chunksLoaded[data.file.id]++;
-      console.log("1file id: "+data.file.id+" total: "+data.file.chunk_total+
-                  " chunksLoaded: "+chunksLoaded[data.file.id]+" chunk_num: "+data.file.chunk_num);
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
-    }else{
+    }else{ // if it's the last chunk, write file
       chunksLoaded[data.file.id]++;
-      console.log("1file id: "+data.file.id+" total: "+data.file.chunk_total+
-                  " chunksLoaded: "+chunksLoaded[data.file.id]+" chunk_num: "+data.file.chunk_num);
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
-      console.log();
       writeFile(socket, data);
+      //console.log("3file id: "+data.file.id+" total: "+data.file.chunk_total+" chunksLoaded: "+ // DEBUG
+                  //chunksLoaded[data.file.id]+" chunk_num: "+data.file.chunk_num);
     }
     socket.emit("next chunk");
   }
@@ -59,16 +49,17 @@ var UpIoFileUpload = function(){
   var abort = function(data){
     if(data.file){
       chunkFiles[data.file.id].close();
-      fs.unlink(path.join(__dirname, dir, data.file.name));
+      fs.unlink(path.join(__dirname, this.dir, data.file.name));
       chunkFiles.splice(data.file.id, 1);
       console.log("aborted upload");
      }
-  }
+  }.bind(this)
   
   this.listen = function (socket) {
     socket.on("up_chunk", function(data){chunk(socket, data)});
 		socket.on("disconnect", function(data){abort(data)});
     socket.on("abort", function(data){abort(data)});
+    socket.on("error", function(){console.log("socket error");});
 	};
 }
 
