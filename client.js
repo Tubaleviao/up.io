@@ -27,7 +27,7 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
       var end = (i+1)*chunkSize;
       var blob = file.slice(i*chunkSize, end);
       if(!file_info[id]){file_info[id] = []}
-      file_info[id][i] = {name: file.name, id: id, size: file.size, chunk_total: iter, chunk_num: i};
+      file_info[id][i] = {name: file.name, id: id, size: file.size, chunk_total: iter, chunk_num: i, chunk_size: chunkSize};
       var reader = new FileReader();
       reader.readAsArrayBuffer(blob);
       reader.onload = (function(p) {

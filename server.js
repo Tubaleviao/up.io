@@ -42,7 +42,10 @@ var UpIoFileUpload = function(){
     }else if(chunksLoaded[data.file.id] < data.file.chunk_total-1){
       chunksLoaded[data.file.id]++;
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
-			socket.emit("up_progress", {file_name: data.file.name, percent: (chunksLoaded[data.file.id]/data.file.chunk_total).toFixed(2)});
+			var result = {file_name: data.file.name, percent: (chunksLoaded[data.file.id]/data.file.chunk_total).toFixed(2)};
+			result.file_size = data.file.size;
+			result.loaded = chunksLoaded[data.file.id] * data.file.chunk_size;
+			socket.emit("up_progress", result);
     }else{ // if it's the last chunk, write file
       chunksLoaded[data.file.id]++;
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
