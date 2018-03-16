@@ -33,7 +33,6 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
       reader.onload = (function(p) {
           return function(e) {
             chunksQueue.push({file_id: p.id.valueOf(), num: p.i.valueOf(), chunk: this.result});
-						//console.log(p.i+" "+first);
             if(p.i === 0 && first){emitChunk(); first=false;}
           };
       })({id: id, i: i});
@@ -65,6 +64,17 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
     if(files.length > 0){
       startSendingFile(files.pop(), data.file_id);// start next file
     }
+  });
+	
+	this.socket.on("up_started", function(id){
+    this.socket.emit("up_started", id);
+  });
+	
+	this.socket.on("up_abortOne", function(id){
+		chunksQueue = chunksQueue.filter(function(c){
+										return c.file_id != id;
+									});
+    this.socket.emit("up_abortedOne", id);
   });
 	
 	this.socket.on("up_aborted", function(){

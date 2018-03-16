@@ -53,8 +53,8 @@ While the file is being uploaded, the progress can be viewed like this:
 
 ```
 socket.on('up_progress', function(data){
-        console.log(data.file_name+": "+data.percent+"%");
-				//data: {file_name: "test.mp3", percent: 0.5, file_size: 3293843, loaded: 2394058}
+	console.log(data.file_name+": "+data.percent+"%");
+	//data: {file_name: "test.mp3", percent: 0.5, file_size: 3293843, loaded: 2394058, file_id: 0}
       });
 ```
 
