@@ -47,6 +47,16 @@ The commented line code are optional parameters. After these steps, the uploader
 
 Events that can be handled by the client-side javascript.
 
+### start
+
+When the file start to being uploaded, the "up_started" call will be fired:
+
+```
+socket.on('up_started', function(data){
+	console.log("Music id which started: "+data.id);
+})
+```
+
 ### progress
 
 While the file is being uploaded, the progress can be viewed like this:
