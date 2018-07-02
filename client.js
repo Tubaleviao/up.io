@@ -59,25 +59,25 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
     
 	}.bind(this);
   
-  this.socket.on("up_completed", function(data){
+  socket.on("up_completed", function(data){
     //console.log("completed");
     if(files.length > 0){
       startSendingFile(files.pop(), data.file_id);// start next file
     }
   });
 	
-	this.socket.on("up_started", function(id){
+	socket.on("up_started", function(id){
     this.socket.emit("up_started", id);
   });
 	
-	this.socket.on("up_abortOne", function(id){
+	socket.on("up_abortOne", function(id){
 		chunksQueue = chunksQueue.filter(function(c){
 										return c.file_id != id;
 									});
     this.socket.emit("up_abortedOne", id);
   });
 	
-	this.socket.on("up_aborted", function(){
+	socket.on("up_aborted", function(){
     //console.log("aborted");
 		chunksQueue = [];
 		first = true;
@@ -86,14 +86,14 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
 		file_info = [];
   });
   
-  this.socket.on("next chunk", function(){
+  socket.on("next chunk", function(){
     if(chunksQueue.length > 0){
       emitChunk();
     }
 		//console.log("next chunk");
   });
 	
-	this.socket.emit("up_init");
+	socket.emit("up_init");
   
   inpt.addEventListener("change", treatFiles.bind(this), false);
 };
