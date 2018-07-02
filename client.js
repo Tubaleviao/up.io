@@ -67,14 +67,14 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
   });
 	
 	socket.on("up_started", function(id){
-    this.socket.emit("up_started", id);
+    socket.emit("up_started", id);
   });
 	
 	socket.on("up_abortOne", function(id){
 		chunksQueue = chunksQueue.filter(function(c){
 										return c.file_id != id;
 									});
-    this.socket.emit("up_abortedOne", id);
+    socket.emit("up_abortedOne", id);
   });
 	
 	socket.on("up_aborted", function(){
