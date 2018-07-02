@@ -15,7 +15,7 @@ var UpIoFileUpload = function(){
   
   var writeFile = function (socket, data){
     //console.log("writing file"); // DEBUG
-    var saving = fs.createWriteStream(path.join(__dirname, this.dir, data.file.name)); // create write stream
+    var saving = fs.createWriteStream(path.join(__dirname, '../../'+this.dir, data.file.name)); // create write stream
     var itemsProcessed = 0;
     for(var i=0; i<chunkFiles[data.file.id].length; i++){ // select chunk by chunk of the file
       var buff = chunkFiles[data.file.id][i];
@@ -39,7 +39,7 @@ var UpIoFileUpload = function(){
       chunkFiles[data.file.id] = [];
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
       chunksLoaded[data.file.id] = 1;
-			socket.emit("up_started", data.file.id);  // readme
+			socket.emit("up_started", {id: data.file.id, size: data.file.size, loaded: 0, music: data.file.name}); // data.exists
     }else if(chunksLoaded[data.file.id] < data.file.chunk_total-1){
       chunksLoaded[data.file.id]++;
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
@@ -52,8 +52,6 @@ var UpIoFileUpload = function(){
       chunksLoaded[data.file.id]++;
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
       writeFile(socket, data);
-      //console.log("3file id: "+data.file.id+" total: "+data.file.chunk_total+" chunksLoaded: "+ // DEBUG
-                  //chunksLoaded[data.file.id]+" chunk_num: "+data.file.chunk_num);
     }
     if(!aborted){
 			socket.emit("next chunk");
