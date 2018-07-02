@@ -1,6 +1,6 @@
 {
   "name": "up.io",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "uploads files to a node.js server using socket.io and stream",
   "main": "server.js",
   "directories": {
