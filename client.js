@@ -60,7 +60,6 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
 	}.bind(this);
   
   socket.on("up_completed", function(data){
-    //console.log("completed");
     if(files.length > 0){
       startSendingFile(files.pop(), data.file_id);// start next file
     }
@@ -79,7 +78,6 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
   });
 	
 	socket.on("up_aborted", function(){
-    //console.log("aborted");
 		chunksQueue = [];
 		first = true;
 		readers = [];
@@ -91,11 +89,14 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
     if(chunksQueue.length > 0){
       emitChunk();
     }
-		//console.log("next chunk");
   });
 	
 	socket.emit("up_init");
   
-  inpt.addEventListener("change", treatFiles.bind(this), false);
+  //inpt.addEventListener("change", treatFiles.bind(this), false); 
+  document.addEventListener('DOMContentLoaded', function () {
+      inpt.addEventListener("change", treatFiles.bind(this));
+  });
+  
 };
 
