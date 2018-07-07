@@ -82,7 +82,7 @@ var UpIoFileUpload = function(){
 		socket.on("disconnect", function(data){init()});
     socket.on("up_abort", function(){abort(socket)}); // readme
 		socket.on("up_abortOne", function(id){abortOne(socket, id)}); // readme
-		socket.on("abortedOne", function(id){abortOne(socket, id)});
+		socket.on("up_abortedOne", function(id){abortOne(socket, id)});
     socket.on("error", function(){console.log("socket error");});
 	};
 }
