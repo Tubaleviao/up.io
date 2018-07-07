@@ -93,10 +93,7 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
 	
 	socket.emit("up_init");
   
-  //inpt.addEventListener("change", treatFiles.bind(this), false); 
-  document.addEventListener('DOMContentLoaded', function () {
-      inpt.addEventListener("change", treatFiles.bind(this));
-  });
+  inpt.addEventListener("change", treatFiles.bind(this)); 
   
 };
 
