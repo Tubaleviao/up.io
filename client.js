@@ -64,10 +64,11 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
     if(files.length > 0){
       startSendingFile(files.pop(), data.file_id);// start next file
     }
+    socket.emit("up_completed", data);
   });
 	
-	socket.on("up_started", function(id){
-    socket.emit("up_started", id);
+	socket.on("up_started", function(data){
+    socket.emit("up_started", data);
   });
 	
 	socket.on("up_abortOne", function(id){
