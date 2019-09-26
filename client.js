@@ -62,6 +62,8 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
   socket.on("up_completed", function(data){
     if(files.length > 0){
       startSendingFile(files.pop(), data.file_id);// start next file
+    }else{
+      inpt.addEventListener("change", treatFiles.bind(this));
     }
     socket.emit("up_completed", data);
   });
@@ -93,7 +95,7 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
 	
 	socket.emit("up_init");
   
-  inpt.addEventListener("change", treatFiles.bind(this)); 
+  inpt.addEventListener("change", treatFiles.bind(this));
   
 };
 

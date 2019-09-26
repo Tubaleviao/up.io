@@ -15,7 +15,11 @@ var UpIoFileUpload = function(){
   
   var writeFile = function (socket, data){
     //console.log("writing file"); // DEBUG
-    var saving = fs.createWriteStream(path.join(__dirname, '../../'+this.dir, data.file.name)); // create write stream
+    if(!fs.existsSync(path.join(__dirname, `../../${this.dir}`))){
+      fs.mkdir(path.join(__dirname, `../../${this.dir}`))
+    }
+    var saving = fs.createWriteStream(path.join(__dirname, `../../${this.dir}`, data.file.name)); // create write stream
+    
     var itemsProcessed = 0;
     for(var i=0; i<chunkFiles[data.file.id].length; i++){ // select chunk by chunk of the file
       var buff = chunkFiles[data.file.id][i];
