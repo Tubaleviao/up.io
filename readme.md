@@ -1,5 +1,5 @@
 # up.io
-## instalation
+## installation
 go to your project folder and run:
 
 ```npm install up.io --save```
@@ -17,7 +17,7 @@ Inside your Socket connection, add the lines:
 ```
 io.on("connection", function(socket){
     var uploader = new upio();
-    //uploader.dir = "path/to/save/uploads"; // (default: current directory)
+    //uploader.dir = "path/to/save/uploads"; // optional
     uploader.listen(socket);
 });
 ```
