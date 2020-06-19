@@ -17,7 +17,7 @@ var UpIoFileUpload = function(){
     //console.log("writing file"); // DEBUG
     if(!fs.existsSync(path.join(__dirname, `../../${this.dir}`))){
       fs.mkdir(path.join(__dirname, `../../${this.dir}`), err =>{
-        if(err) console.error(err)
+        if(err) console.error(err) // fix #1
       })
     }
     let p = path.join(__dirname, `../../${this.dir}`, data.file.name)
