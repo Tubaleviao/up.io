@@ -14,8 +14,8 @@
   "author": "Tubalevião",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.16.2",
-    "socket.io": "^2.4.0",
-    "up.io": "^1.0.1"
+    "express": "^4.17.1",
+    "socket.io": "^2.4.1",
+    "up.io": "^1.1.0"
   }
 }
