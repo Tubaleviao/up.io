@@ -33,17 +33,16 @@ var UpIoFileUpload = function(){
     var itemsProcessed = 0;
     for(var i=0; i<chunkFiles[data.file.id].length; i++){ // select chunk by chunk of the file
       var buff = chunkFiles[data.file.id][i];
-      //process.stdout.write(`file_id: ${data.file.id} chunk: ${i}`); // DEBUG
-      //process.stdout.write(` buff.length: ${buff.length}\n`);
-      saving.write(buff, () => { // start writing
-        itemsProcessed++;
-        if(itemsProcessed === chunkFiles[data.file.id].length) { // check if it's all writen
-          saving.close();
-          chunkFiles[data.file.id] = undefined; // reset the file_id array
-          socket.emit("up_completed", {file_id: data.file.id, file_name: data.file.name, success: true});  // readme
-          console.debug(`file saved at ${dir}` )
-        }
-      });
+      if(buff)
+        saving.write(buff, () => { // start writing
+          itemsProcessed++;
+          if(itemsProcessed === chunkFiles[data.file.id].length) { // check if it's all writen
+            saving.close();
+            chunkFiles[data.file.id] = undefined; // reset the file_id array
+            socket.emit("up_completed", {file_id: data.file.id, file_name: data.file.name, success: true})
+            console.debug(`file saved at ${dir}` )
+          }
+        });
     }
   }.bind(this)
   
@@ -65,7 +64,7 @@ var UpIoFileUpload = function(){
 			socket.emit("up_progress", result);
     }else{ // last chunk
       chunksLoaded[data.file.id]++;
-      chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
+      chunkFiles[data.file.id][data.file.chunk_num] = data.chunk
     }
     if(chunksLoaded[data.file.id] === data.file.chunk_total){ // fix #2
       writeFile(socket, data);

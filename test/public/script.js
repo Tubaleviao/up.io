@@ -19,8 +19,7 @@ $(document).ready(() => {
         console.log('Aborted!');
       });
       socket.on('up_completed', function(data){
-        console.log(data.file_name+": "+data.percent+"%");
-        console.log("Completed!");
+        console.log(data.file_name+" Completed!");
       });
       
     }
