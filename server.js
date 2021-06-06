@@ -42,7 +42,8 @@ var UpIoFileUpload = function(){
             socket.emit("up_completed", {file_id: data.file.id, file_name: data.file.name, success: true})
             console.debug(`file saved at ${dir}` )
           }
-        });
+        })
+      else socket.emit("up_get_chunk", { file_id: data.file.id, chunk_num: i })
     }
   }.bind(this)
   

@@ -12,6 +12,7 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
   var socket = this.socket;
   var files = [], file_info = [];
   var chunksQueue = [], first = true;
+  let sending = []
 	
   var emitChunk = function(){
     var indexx = Math.floor(Math.random() * chunksQueue.length);
@@ -45,24 +46,40 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
     var iter = this.parallelFiles;
     event.preventDefault()
 
-    for(var i=0; i<fileList.length; i++)
-      files.push(fileList[i])
+    files = [...fileList]
 
     if(fileList.length < iter)
       iter = fileList.length
 
-    for(var j=0; j<iter; j++)
-      startSendingFile(files.pop(), j);
+    for(var j=0; j<iter; j++){
+      sending[j] = files.pop()
+      startSendingFile(sending[j], j);
+    }
     
     if(this.resetFileInputs)
       inpt.value = ""; // reset files in the input
     
 	}.bind(this);
+
+  socket.on("up_get_chunk", ({file_id, chunk_num}) => {
+    const end = (chunk_num+1)*chunkSize;
+    const blob = sending[file_id].slice(chunk_num*chunkSize, end);
+    var reader = new FileReader();
+    reader.readAsArrayBuffer(blob);
+    reader.onload = (function(p) {
+        return function(e) {
+          chunksQueue.push({file_id: p.id.valueOf(), num: p.i.valueOf(), chunk: this.result});
+        };
+    })({ id: file_id, i: chunk_num });
+  } )
   
   socket.on("up_completed", function(data){
-    if(files.length > 0) 
-      startSendingFile(files.pop(), data.file_id);// start next file
-    else cleanQueue()
+    if(files.length > 0){
+      sending[data.file_id] = files.pop()
+      startSendingFile(sending[data.file_id], data.file_id) // start next file
+    } else sending[data.file_id] = undefined
+    
+    if(!sending.some( v => v)) cleanQueue()
     socket.emit("up_completed", data);
   });
 	
@@ -80,6 +97,7 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
 		first = true;
 		files = [];
 		file_info = [];
+    sending = [];
   }
   
   socket.on("next chunk", function(){
