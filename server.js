@@ -1,9 +1,15 @@
-var path = require("path"),
-  fs = require("fs");
+const path = require("path"),
+  fs = require("fs")
+
+require('dotenv').config();
+
+if (process.env.NODE_ENV !== 'test') {
+  console.debug = m => null
+}
 
 var UpIoFileUpload = function(){
   
-	this.dir = ""; // folder path to save files (current folder as deffault)
+	this.dir = ""; // folder path to save files (defaults to ./)
   var chunkFiles = []; // array of files being uploaded
   var chunksLoaded = [];
 	var aborted = false;
@@ -14,13 +20,14 @@ var UpIoFileUpload = function(){
 	}
   
   var writeFile = function (socket, data){
-    //console.log("writing file"); // DEBUG
+    console.debug("writing file "+data.file.name)
     if(!fs.existsSync(path.join(__dirname, `../../${this.dir}`))){
       fs.mkdir(path.join(__dirname, `../../${this.dir}`), err =>{
         if(err) console.error(err) // fix #1
       })
     }
-    let p = path.join(__dirname, `../../${this.dir}`, data.file.name)
+    const dir = path.join(__dirname, `../../${this.dir}`)
+    let p = path.join(dir, data.file.name)
     var saving = fs.createWriteStream(p); // create write stream
     
     var itemsProcessed = 0;
@@ -31,33 +38,36 @@ var UpIoFileUpload = function(){
       saving.write(buff, () => { // start writing
         itemsProcessed++;
         if(itemsProcessed === chunkFiles[data.file.id].length) { // check if it's all writen
-          //console.log("writen"); // DEBUG
           saving.close();
           chunkFiles[data.file.id] = undefined; // reset the file_id array
-          //console.log("file id deleted: "+data.file.id); // DEBUG
           socket.emit("up_completed", {file_id: data.file.id, file_name: data.file.name, success: true});  // readme
+          console.debug(`file saved at ${dir}` )
         }
       });
     }
   }.bind(this)
   
   var chunk = function (socket, data){
-    if(!chunkFiles[data.file.id]){ // if it's the first chunk, initialize the array
+    if(!chunkFiles[data.file.id]){ // if it's the first chunk, initialize
+      console.debug("upload started for "+data.file.name)
+      console.debug(`total chunks: ${data.file.chunk_total}`)
       chunkFiles[data.file.id] = [];
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
       chunksLoaded[data.file.id] = 1;
 			socket.emit("up_started", {id: data.file.id, size: data.file.size, loaded: 0, music: data.file.name}); // data.exists
-    }else if(chunksLoaded[data.file.id] < data.file.chunk_total-1){
+    } else if(chunksLoaded[data.file.id] < data.file.chunk_total-1){
       chunksLoaded[data.file.id]++;
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
 			var result = {file_name: data.file.name, percent: (chunksLoaded[data.file.id]/data.file.chunk_total).toFixed(2)};
 			result.file_size = data.file.size;
 			result.loaded = chunksLoaded[data.file.id] * data.file.chunk_size;
-			result.file_id = data.file.id;
+			result.file_id = data.file.id
 			socket.emit("up_progress", result);
-    }else{ // if it's the last chunk, write file
+    }else{ // last chunk
       chunksLoaded[data.file.id]++;
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
+    }
+    if(chunksLoaded[data.file.id] === data.file.chunk_total){ // fix #2
       writeFile(socket, data);
     }
     if(!aborted){

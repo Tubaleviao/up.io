@@ -20,10 +20,13 @@
     "socket.io",
     "stream"
   ],
-  "author": "Tubalevião <tubaleviao@gmail.com> (http://chocotuba.work)",
+  "author": "Tubalevião <tubaleviao@gmail.com> (http://tuba.work)",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Tubaleviao/up.io/issues"
   },
-  "homepage": "https://github.com/Tubaleviao/up.io#readme"
+  "homepage": "https://github.com/Tubaleviao/up.io#readme",
+  "dependencies": {
+    "dotenv": "^10.0.0"
+  }
 }
