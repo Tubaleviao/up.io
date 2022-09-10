@@ -60,7 +60,7 @@ When the file start to being uploaded, the "up_started" call will be fired:
 
 ```
 socket.on('up_started', function(data){
-	console.log("Music id which started: "+data.id);
+	console.log("File id which started: "+data.id);
 })
 ```
 
