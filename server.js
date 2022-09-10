@@ -3,7 +3,7 @@ const path = require("path"),
 
 require('dotenv').config();
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'upio_test') {
   console.debug = m => null
 }
 
@@ -15,6 +15,7 @@ var UpIoFileUpload = function(){
 	var aborted = false;
 	
 	var init = function(){
+		console.debug('init up.io')
 		chunkFiles = [];
 		chunksLoaded = [];
 	}
@@ -94,7 +95,7 @@ var UpIoFileUpload = function(){
   }
 	
   this.listen = function (socket) {
-		socket.on("up_init", function(data){init()});
+		socket.on("up_init", function(){init()});
     socket.on("up_chunk", function(data){chunk(socket, data)});
 		socket.on("disconnect", function(data){init()});
     socket.on("up_abort", function(){abort(socket)}); // readme

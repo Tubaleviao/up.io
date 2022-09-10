@@ -25,6 +25,7 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
   var startSendingFile = function (file, id){
     const { size, name, } = file
     var iter = Math.ceil(size / chunkSize);
+    if(size === 0) iter = 1 // fix #11
     for(var i=0; i < iter; i++){
       var end = (i+1)*chunkSize;
       var blob = file.slice(i*chunkSize, end);
@@ -45,11 +46,10 @@ UpIoFileUpload.prototype.listenInput = function(inpt) {
     var fileList = event.target.files || event.dataTransfer.files;
     var iter = this.parallelFiles;
     event.preventDefault()
-
     files = [...fileList]
 
-    if(fileList.length < iter)
-      iter = fileList.length
+    if(files.length < iter)
+      iter = files.length
 
     for(var j=0; j<iter; j++){
       sending[j] = files.pop()

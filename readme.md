@@ -30,15 +30,22 @@ Insert the input tag in your HTML page:
 
 ```<input id="upio_input" type="file" multiple>```
 
-After that, your script should give up.io the element like this:
+After that, your javascript should give up.io the element like this:
 
 ```
 var socket = io.connect();
 var uploader = new UpIoFileUpload(socket);
-//uploader.parallelFiles = 5;
-//uploader.chunkSize = 1024 * 100;
-//uploader.resetFileInputs = true;
-uploader.listenInput(document.getElementById("upio_input")); // pass html element only after the page are complete loaded
+
+// defaults:
+// uploader.parallelFiles = 5;
+// uploader.chunkSize = 1024 * 100;
+// uploader.resetFileInputs = true;
+
+uploader.listenInput(document.getElementById("upio_input")); 
+
+// make sure this code runs after the page is completely loaded,
+// using something like the $(document).ready function (see example)
+
 ```
 
 The commented line code are optional parameters. After these steps, the uploader should work.
