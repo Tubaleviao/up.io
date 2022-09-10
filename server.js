@@ -55,7 +55,7 @@ var UpIoFileUpload = function(){
       chunkFiles[data.file.id] = [];
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;
       chunksLoaded[data.file.id] = 1;
-			socket.emit("up_started", {id: data.file.id, size: data.file.size, loaded: 0, music: data.file.name}); // data.exists
+			socket.emit("up_started", {id: data.file.id, size: data.file.size, loaded: 0, file: data.file.name}); // data.exists
     } else if(chunksLoaded[data.file.id] < data.file.chunk_total-1){
       chunksLoaded[data.file.id]++;
       chunkFiles[data.file.id][data.file.chunk_num] = data.chunk;

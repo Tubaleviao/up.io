@@ -33,7 +33,7 @@ Insert the input tag in your HTML page:
 After that, your javascript should give up.io the element like this:
 
 ```
-var socket = io.connect();
+var socket = io();
 var uploader = new UpIoFileUpload(socket);
 
 // defaults:
